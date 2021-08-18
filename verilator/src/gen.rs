@@ -1,4 +1,3 @@
-use verilator_version;
 use cc;
 use std::io::ErrorKind;
 use std::path::{Path, PathBuf};
@@ -25,7 +24,7 @@ pub struct Verilator {
     module_directories: Vec<PathBuf>,
     coverage: bool,
     trace: bool,
-    optimized: bool, 
+    optimized: bool,
     suppress_warnings: Vec<String>,
 }
 
@@ -136,9 +135,6 @@ impl Verilator {
         let mut cmd = Command::new(verilator_exe.clone());
         cmd.arg("--getenv").arg("VERILATOR_ROOT");
 
-        // Determine the Verilator version
-        let (verilator_major, verilator_minor) = verilator_version().unwrap();
-
         println!("running: {:?}", cmd);
         let root = match cmd.output() {
             Ok(output) => PathBuf::from(String::from_utf8_lossy(&output.stdout).trim()),
@@ -158,7 +154,9 @@ impl Verilator {
             .arg("-Mdir")
             .arg(&dst)
             .arg("--top-module")
-            .arg(top_module);
+            .arg(top_module)
+            .arg("--threads")
+            .arg("8");
 
         if self.coverage {
             cmd.arg("--coverage");
@@ -251,32 +249,20 @@ impl Verilator {
         cpp_cfg
             .include(root.join("include"))
             .include(root.join("include/vltstd"))
-            .include(&dst)
-            .file(dst.join(format!("V{}.cpp", top_module)))
-            .file(dst.join(format!("V{}__Syms.cpp", top_module)));
-
-        if verilator_major > 4 || verilator_minor >= 38 {
-            cpp_cfg.file(dst.join(format!("V{}__Slow.cpp", top_module)));
-        }
-
-        for &(ref f, _) in &self.files {
-            match f.extension() {
-                Some(ext) if ext == "c" || ext == "cpp" => {
-                    cpp_cfg.file(f);
-                }
-                _ => {}
-            };
-        }
+            .include(&dst);
 
         if self.coverage {
             cpp_cfg.define("VM_COVERAGE", "1");
         }
 
-        if self.trace {
-            cpp_cfg
-                .define("VM_TRACE", "1")
-                .file(dst.join(format!("V{}__Trace.cpp", top_module)))
-                .file(dst.join(format!("V{}__Trace__Slow.cpp", top_module)));
+        for entry in fs::read_dir(&dst).unwrap() {
+            if let Ok(entry) = entry {
+                let filename = entry.file_name().into_string().unwrap();
+                if filename.ends_with(".c") || filename.ends_with(".cpp") {
+                    eprintln!("added: {}", entry.path().to_str().unwrap());
+                    cpp_cfg.file(entry.path());
+                }
+            }
         }
 
         cpp_cfg.compile(&format!("V{}__ALL", top_module));
