@@ -15,7 +15,7 @@ macro_rules! t {
 }
 
 fn main() {
-    let out_dir = env::var("OUT_DIR").unwrap();
+    let out_dir = env::var("FFI_DIR").unwrap();
     let out_dir = PathBuf::from(out_dir);
     let _ = fs::remove_dir_all(&out_dir);
     t!(fs::create_dir_all(&out_dir));

@@ -16,10 +16,10 @@ pub fn module(_: TokenStream, input: TokenStream) -> TokenStream {
         Ok(item) => {
             let src = format!("/{}.rs", item.ident);
             quote! {
-                include!(concat!(env!("OUT_DIR"), #src));
+                include!(concat!(env!("FFI_DIR"), #src));
             }
         }
-        Err(..) => quote!{},
+        Err(..) => quote! {},
     };
 
     expanded.into()

@@ -128,7 +128,7 @@ impl Verilator {
         let dst = self
             .out_dir
             .clone()
-            .unwrap_or_else(|| PathBuf::from(getenv_unwrap("OUT_DIR")));
+            .unwrap_or_else(|| PathBuf::from(getenv_unwrap("FFI_DIR")));
 
         // Determine ${VERILATOR_ROOT}
         let verilator_exe = self.find_verilator_exe();

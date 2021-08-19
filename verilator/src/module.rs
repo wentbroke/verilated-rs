@@ -29,7 +29,7 @@ pub struct ModuleGenerator {
 impl ModuleGenerator {
     /// Configures the output directory of the generated Rust and C code.
     ///
-    /// Note that for Cargo builds this defaults to `$OUT_DIR` and it's not
+    /// Note that for Cargo builds this defaults to `$FFI_DIR` and it's not
     /// necessary to call.
     ///
     /// ```ignore
@@ -85,7 +85,7 @@ impl ModuleGenerator {
         let out_dir = self
             .out_dir
             .clone()
-            .unwrap_or_else(|| PathBuf::from(env::var_os("OUT_DIR").unwrap()));
+            .unwrap_or_else(|| PathBuf::from(env::var_os("FFI_DIR").unwrap()));
 
         // Probe the crate to find all the structs of interest
         let mut structs = StructFinder {
