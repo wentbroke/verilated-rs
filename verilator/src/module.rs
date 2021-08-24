@@ -231,11 +231,6 @@ extern "C" {{
   }}
 
   void
-  {c_ty}_trace(V{c_ty}* __ptr, VerilatedVcdC* __tfp, int __levels) {{
-    __ptr->trace(__tfp, __levels);
-  }}
-
-  void
   {c_ty}_final(V{c_ty}* __ptr) {{
     __ptr->final();
   }}
